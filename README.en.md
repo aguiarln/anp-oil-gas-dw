@@ -503,6 +503,15 @@ Columns, separated by `;` and in UTF-8:
 5. **101 rows have no stream.** The column is already empty in the PDF (e.g.
    "BT-REC-10 LAGOA DO PAULO").
 
+## License
+
+The code and the documentation are under the [MIT license](LICENSE). Two exceptions:
+
+- the **ANP data**, and the source base generated from it, follow the terms of use
+  of ANP's open data;
+- the calendar script `database/dw/dim_data.sql` is adapted from a third-party
+  script, with the credit to the original author in the file itself.
+
 ## Glossary
 
 Portuguese terms used in the code, tables and folders.

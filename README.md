@@ -497,3 +497,12 @@ Colunas, separadas por `;` e em UTF-8:
    - 41 linhas sem nome de campo recuperável foram **descartadas**.
 5. **101 linhas não têm corrente.** A coluna já vem vazia no PDF (ex.:
    "BT-REC-10 LAGOA DO PAULO").
+
+## Licença
+
+O código e a documentação estão sob a [licença MIT](LICENSE). Duas exceções:
+
+- os **dados da ANP**, e a base origem gerada a partir deles, seguem os termos de uso
+  dos dados abertos da ANP;
+- o script de calendário `database/dw/dim_data.sql` é adaptado de um script de
+  terceiros, com o crédito ao autor original no próprio arquivo.
