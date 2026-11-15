@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transformation>
+  <info>
+    <name>tr_05_dim_campo</name>
+    <description>Campo (nome + bacia, T14/T20), nome atual (T04), sucessor (T05), estado e região (T13), contorno (T20)
+e trocas de operador (T23). SCD2: nome, bacia, contorno; SCD1 (Update): datas das trocas.</description>
+    <extended_description/>
+    <trans_version/>
+    <trans_type>Normal</trans_type>
+    <directory>/</directory>
+    <parameters></parameters>
+    <size_rowset>10000</size_rowset>
+    <sleep_time_empty>50</sleep_time_empty>
+    <sleep_time_full>50</sleep_time_full>
+    <unique_connections>N</unique_connections>
+    <feedback_shown>Y</feedback_shown>
+    <feedback_size>100000</feedback_size>
+    <using_thread_priorities>Y</using_thread_priorities>
+    <shared_objects_file/>
+    <capture_step_performance>N</capture_step_performance>
+    <step_performance_capturing_delay>1000</step_performance_capturing_delay>
+    <step_performance_capturing_size_limit>100</step_performance_capturing_size_limit>
+    <dependencies></dependencies>
+    <partitionschemas></partitionschemas>
+    <slaveservers></slaveservers>
+    <clusterschemas></clusterschemas>
+    <created_user>anp-oil-gas-dw</created_user>
+    <created_date>2026/11/14 12:00:00.000</created_date>
+    <modified_user>anp-oil-gas-dw</modified_user>
+    <modified_date>2026/11/14 12:00:00.000</modified_date>
+  </info>
+  <notepads>
+    <notepad>
+      <note>dim_campo: Campo (nome + bacia, T14/T20), nome atual (T04), sucessor (T05), estado e região (T13), contorno (T20)
+e trocas de operador (T23). SCD2: nome, bacia, contorno; SCD1 (Update): datas das trocas.
+De-para (T22): de qual linha da stage veio cada chave natural.</note>
+      <xloc>20</xloc><yloc>4</yloc><width>640</width><heigth>60</heigth>
+      <fontname>Segoe UI</fontname><fontsize>9</fontsize><fontbold>N</fontbold><fontitalic>N</fontitalic>
+      <fontcolorred>14</fontcolorred><fontcolorgreen>58</fontcolorgreen><fontcolorblue>105</fontcolorblue>
+      <backgroundcolorred>230</backgroundcolorred><backgroundcolorgreen>240</backgroundcolorgreen><backgroundcolorblue>250</backgroundcolorblue>
+      <bordercolorred>100</bordercolorred><bordercolorgreen>100</bordercolorgreen><bordercolorblue>100</bordercolorblue>
+      <drawshadow>N</drawshadow>
+    </notepad>
+  </notepads>
+  <connection>
+    <name>st_anp</name>
+    <server>localhost</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>st_anp</database>
+    <port>5432</port>
+    <username>postgres</username>
+    <password>${PG_SENHA}</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes><attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute><attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute><attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute><attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute><attribute><code>PRESERVE_RESERVED_WORD_CASE</code><attribute>Y</attribute></attribute><attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute><attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>Y</attribute></attribute><attribute><code>SUPPORTS_TIMESTAMP_DATA_TYPE</code><attribute>Y</attribute></attribute><attribute><code>USE_POOLING</code><attribute>N</attribute></attribute></attributes>
+  </connection>
+  <connection>
+    <name>dw_anp_pdi</name>
+    <server>localhost</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>dw_anp_pdi</database>
+    <port>5432</port>
+    <username>postgres</username>
+    <password>${PG_SENHA}</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes><attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute><attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute><attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute><attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute><attribute><code>PRESERVE_RESERVED_WORD_CASE</code><attribute>Y</attribute></attribute><attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute><attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>Y</attribute></attribute><attribute><code>SUPPORTS_TIMESTAMP_DATA_TYPE</code><attribute>Y</attribute></attribute><attribute><code>USE_POOLING</code><attribute>N</attribute></attribute></attributes>
+  </connection>
+  <order>
+    <hop><from>Regras da dim_campo</from><to>SCD2 dim_campo</to><enabled>Y</enabled></hop>
+    <hop><from>De-para da dim_campo</from><to>etl_depara</to><enabled>Y</enabled></hop>
+  </order>
+  <step>
+    <name>Regras da dim_campo</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <connection>dw_anp_pdi</connection>
+    <sql>-- T14/T20 grafias (nome + bacia); T04 renomeação e T05 unificação (lista de-para, em cadeia);
+-- T20 contorno; T23 última troca de operador, última venda (o grupo econômico muda) e última reorganização
+WITH RECURSIVE
+uso AS (SELECT id_campo, count(*) AS n FROM trab.cons GROUP BY 1),
+m AS (SELECT c.id_campo, c.nome, c.bacia, trab.chave(c.nome) AS kn, trab.chave(c.bacia) AS kb, u.n
+      FROM trab.campo c JOIN uso u USING (id_campo)),
+-- grafia de exibição: a mais usada; o mesmo nome em dois cadastros vale o uso do cadastro mais recente
+nomes AS (SELECT DISTINCT ON (kn, kb, nome) kn, kb, nome, n FROM m ORDER BY kn, kb, nome, id_campo DESC),
+bacias AS (SELECT DISTINCT ON (kn, kb, bacia) kn, kb, bacia, n FROM m ORDER BY kn, kb, bacia, id_campo DESC),
+g AS (SELECT kn, kb,
+             (SELECT x.nome FROM nomes x WHERE (x.kn, x.kb) = (m.kn, m.kb) ORDER BY x.n DESC, x.nome COLLATE "C" LIMIT 1) AS nm_campo,
+             (SELECT x.bacia FROM bacias x WHERE (x.kn, x.kb) = (m.kn, m.kb) ORDER BY x.n DESC, x.bacia COLLATE "C" LIMIT 1) AS nm_bacia
+      FROM m GROUP BY kn, kb),
+-- eventos da lista de-para (a linha mais abaixo vale, como num dicionário)
+ev AS (SELECT row_number() OVER () AS ordem, trab.chave(campo_origem) AS okn, trab.chave(bacia_origem) AS okb,
+              trab.chave(campo_destino) AS dkn, trab.chave(bacia_destino) AS dkb, campo_destino, tipo
+       FROM trab.dp_campos),
+ren AS (SELECT DISTINCT ON (okn, okb) okn, okb, dkn, dkb FROM ev WHERE tipo = 'renomeacao' ORDER BY okn, okb, ordem DESC),
+suc AS (SELECT DISTINCT ON (okn, okb) okn, okb, dkn, dkb FROM ev WHERE tipo IN ('renomeacao', 'unificacao') ORDER BY okn, okb, ordem DESC),
+cad_ren AS (SELECT kn, kb, kn AS akn, kb AS akb, 0 AS passo FROM g
+            UNION ALL
+            SELECT c.kn, c.kb, r.dkn, r.dkb, c.passo + 1 FROM cad_ren c JOIN ren r ON (r.okn, r.okb) = (c.akn, c.akb) WHERE c.passo &lt; 20),
+cad_suc AS (SELECT kn, kb, kn AS skn, kb AS skb, 0 AS passo FROM g
+            UNION ALL
+            SELECT c.kn, c.kb, s.dkn, s.dkb, c.passo + 1 FROM cad_suc c JOIN suc s ON (s.okn, s.okb) = (c.skn, c.skb) WHERE c.passo &lt; 20),
+atual AS (SELECT DISTINCT ON (kn, kb) kn, kb, akn, akb FROM cad_ren ORDER BY kn, kb, passo DESC),
+sucessor AS (SELECT DISTINCT ON (kn, kb) kn, kb, skn, skb FROM cad_suc ORDER BY kn, kb, passo DESC),
+nome_destino AS (SELECT DISTINCT ON (dkn, dkb) dkn, dkb, campo_destino FROM ev ORDER BY dkn, dkb, ordem),
+-- contorno: pelo nome + bacia; senão, só pelo nome quando ele é único entre os campos da produção
+unico AS (SELECT kn, min(kb) AS kb FROM g GROUP BY kn HAVING count(*) = 1),
+cont AS (SELECT DISTINCT ON (coalesce(g.kn, u.kn), coalesce(g.kb, u.kb)) coalesce(g.kn, u.kn) AS kn, coalesce(g.kb, u.kb) AS kb, cc.geometria_wkt
+         FROM trab.coordenada_campo cc
+         LEFT JOIN g ON (g.kn, g.kb) = (trab.chave(cc.nome), trab.chave(cc.bacia))
+         LEFT JOIN unico u ON g.kn IS NULL AND u.kn = trab.chave(cc.nome)
+         WHERE coalesce(g.kn, u.kn) IS NOT NULL
+         ORDER BY coalesce(g.kn, u.kn), coalesce(g.kb, u.kb), cc.id_campo),
+-- operadora predominante de cada mês (empresa já uniformizada pela dim_empresa) e as trocas (T23)
+op_n AS (SELECT m.kn, m.kb, c.periodo, coalesce(d.nk_dw, 'N/A') AS op, count(*) AS n
+         FROM trab.cons c JOIN m USING (id_campo)
+         LEFT JOIN etl_depara d ON d.nm_dimensao = 'dim_empresa' AND d.id_stage = c.id_empresa
+         GROUP BY 1, 2, 3, 4),
+op_mes AS (SELECT DISTINCT ON (kn, kb, periodo) kn, kb, periodo, op FROM op_n
+           ORDER BY kn, kb, periodo, n DESC, op COLLATE "C"),
+grupo AS (SELECT nk_empresa, nm_grupo_economico FROM dim_empresa
+          WHERE sk_empresa &lt;&gt; 0 AND etl_dt_fim &gt;= '2199-12-31' AND nm_grupo_economico &lt;&gt; 'N/A'),
+seq AS (SELECT kn, kb, periodo, op, lag(op) OVER (PARTITION BY kn, kb ORDER BY periodo) AS ant
+        FROM op_mes WHERE op NOT IN ('N/A', '-')),
+trocas AS (SELECT s.kn, s.kb,
+                  max(s.periodo) FILTER (WHERE s.op &lt;&gt; s.ant) AS troca,
+                  max(s.periodo) FILTER (WHERE s.op &lt;&gt; s.ant AND coalesce(g1.nm_grupo_economico, s.op) &lt;&gt; coalesce(g2.nm_grupo_economico, s.ant)) AS venda,
+                  max(s.periodo) FILTER (WHERE s.op &lt;&gt; s.ant AND coalesce(g1.nm_grupo_economico, s.op) = coalesce(g2.nm_grupo_economico, s.ant)) AS reorg
+           FROM seq s LEFT JOIN grupo g1 ON g1.nk_empresa = s.op LEFT JOIN grupo g2 ON g2.nk_empresa = s.ant
+           GROUP BY s.kn, s.kb),
+-- estado e região do campo (T13): o estado mais frequente nos registros de produção dos seus poços, pela mesma regra
+-- da dim_poco (sufixo do nome do poço, senão o estado mais informado); no empate, a sigla em ordem alfabética
+estados AS (SELECT DISTINCT ON (sigla) sigla, nome, regiao FROM trab.estado WHERE sigla IS NOT NULL ORDER BY sigla, id_estado DESC),
+siglas AS (SELECT sigla, nome, regiao FROM estados
+           UNION ALL
+           SELECT i.sigla, initcap(i.nome), i.regiao FROM trab.ibge i WHERE i.sigla NOT IN (SELECT sigla FROM estados)),
+pinfo AS (SELECT c.id_poco, p.nome_anp, mode() WITHIN GROUP (ORDER BY c.id_estado) AS id_estado
+          FROM trab.cons c JOIN trab.poco p USING (id_poco) GROUP BY 1, 2),
+psuf AS (SELECT pi.*, upper(regexp_replace(pi.nome_anp, '^.*-', '')) AS suf FROM pinfo pi),
+puf AS (SELECT ps.id_poco,
+               coalesce(CASE WHEN ps.suf IN (SELECT sigla FROM siglas) THEN ps.suf
+                             WHEN length(ps.suf) = 3 AND right(ps.suf, 1) = 'S' AND left(ps.suf, 2) IN (SELECT sigla FROM siglas)
+                             THEN left(ps.suf, 2) END,
+                        e.sigla) AS sigla
+        FROM psuf ps LEFT JOIN trab.estado e ON e.id_estado = ps.id_estado),
+uf_n AS (SELECT m.kn, m.kb, pu.sigla, count(*) AS n
+         FROM trab.cons c JOIN m USING (id_campo) JOIN puf pu USING (id_poco)
+         WHERE pu.sigla IS NOT NULL GROUP BY 1, 2, 3),
+uf AS (SELECT DISTINCT ON (kn, kb) kn, kb, sigla FROM uf_n ORDER BY kn, kb, n DESC, sigla COLLATE "C")
+SELECT g.kn || '|' || g.kb AS nk_campo, g.nm_campo,
+       coalesce(ga.nm_campo, nda.campo_destino) AS nm_campo_atual,
+       coalesce(gs.nm_campo, nds.campo_destino) AS nm_campo_sucessor,
+       g.nm_bacia, coalesce(sg.nome, 'N/A') AS nm_estado, coalesce(uf.sigla, 'NA') AS sg_estado,
+       coalesce(sg.regiao, 'N/A') AS nm_regiao,
+       coalesce(c1.geometria_wkt, c2.geometria_wkt) AS desc_contorno_wkt,
+       (trab.centro(coalesce(c1.geometria_wkt, c2.geometria_wkt)))[1] AS nr_latitude_centro,
+       (trab.centro(coalesce(c1.geometria_wkt, c2.geometria_wkt)))[2] AS nr_longitude_centro,
+       t.troca AS dt_ultima_troca_operador, t.venda AS dt_ultima_venda, t.reorg AS dt_ultima_reorganizacao
+FROM g
+JOIN atual a USING (kn, kb) JOIN sucessor s USING (kn, kb)
+LEFT JOIN g ga ON (ga.kn, ga.kb) = (a.akn, a.akb)
+LEFT JOIN nome_destino nda ON (nda.dkn, nda.dkb) = (a.akn, a.akb)
+LEFT JOIN g gs ON (gs.kn, gs.kb) = (s.skn, s.skb)
+LEFT JOIN nome_destino nds ON (nds.dkn, nds.dkb) = (s.skn, s.skb)
+LEFT JOIN cont c1 ON (c1.kn, c1.kb) = (g.kn, g.kb)
+LEFT JOIN cont c2 ON (c2.kn, c2.kb) = (a.akn, a.akb)
+LEFT JOIN trocas t ON (t.kn, t.kb) = (g.kn, g.kb)
+LEFT JOIN uf ON (uf.kn, uf.kb) = (g.kn, g.kb)
+LEFT JOIN siglas sg ON sg.sigla = uf.sigla
+ORDER BY 1</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>140</xloc><yloc>120</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>SCD2 dim_campo</name>
+    <type>DimensionLookup</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <schema/>
+    <table>dim_campo</table>
+    <connection>dw_anp_pdi</connection>
+    <commit>1000</commit>
+    <update>Y</update>
+    <fields>
+      <key><name>nk_campo</name><lookup>nk_campo</lookup></key>
+      <date><name/><from>etl_dt_inicio</from><to>etl_dt_fim</to></date>
+      <field><name>nm_campo</name><lookup>nm_campo</lookup><update>Insert</update></field><field><name>nm_campo_atual</name><lookup>nm_campo_atual</lookup><update>Insert</update></field><field><name>nm_campo_sucessor</name><lookup>nm_campo_sucessor</lookup><update>Insert</update></field><field><name>nm_bacia</name><lookup>nm_bacia</lookup><update>Insert</update></field><field><name>nm_estado</name><lookup>nm_estado</lookup><update>Insert</update></field><field><name>sg_estado</name><lookup>sg_estado</lookup><update>Insert</update></field><field><name>nm_regiao</name><lookup>nm_regiao</lookup><update>Insert</update></field><field><name>desc_contorno_wkt</name><lookup>desc_contorno_wkt</lookup><update>Insert</update></field><field><name>nr_latitude_centro</name><lookup>nr_latitude_centro</lookup><update>Insert</update></field><field><name>nr_longitude_centro</name><lookup>nr_longitude_centro</lookup><update>Insert</update></field><field><name>dt_ultima_troca_operador</name><lookup>dt_ultima_troca_operador</lookup><update>Update</update></field><field><name>dt_ultima_venda</name><lookup>dt_ultima_venda</lookup><update>Update</update></field><field><name>dt_ultima_reorganizacao</name><lookup>dt_ultima_reorganizacao</lookup><update>Update</update></field>
+      <return><name>sk_campo</name><rename/><creation_method>autoinc</creation_method><use_autoinc>Y</use_autoinc><version>etl_versao</version></return>
+    </fields>
+    <sequence/>
+    <min_year>1900</min_year>
+    <max_year>2199</max_year>
+    <cache_size>5000</cache_size>
+    <preload_cache>N</preload_cache>
+    <use_start_date_alternative>N</use_start_date_alternative>
+    <start_date_alternative>none</start_date_alternative>
+    <start_date_field_name/>
+    <useBatch>N</useBatch>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>440</xloc><yloc>120</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>De-para da dim_campo</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <connection>dw_anp_pdi</connection>
+    <sql>SELECT 'dim_campo' AS nm_dimensao, c.id_campo AS id_stage, c.nome || ' (' || c.bacia || ')' AS nm_original,
+       trab.chave(c.nome) || '|' || trab.chave(c.bacia) AS nk_dw
+FROM trab.campo c WHERE c.id_campo IN (SELECT DISTINCT id_campo FROM trab.cons)</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>140</xloc><yloc>240</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>etl_depara</name>
+    <type>TableOutput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <connection>dw_anp_pdi</connection>
+    <schema></schema>
+    <table>etl_depara</table>
+    <commit>10000</commit>
+    <truncate>N</truncate>
+    <ignore_errors>N</ignore_errors>
+    <use_batch>Y</use_batch>
+    <specify_fields>Y</specify_fields>
+    <partitioning_enabled>N</partitioning_enabled>
+    <partitioning_field/>
+    <partitioning_daily>N</partitioning_daily>
+    <partitioning_monthly>Y</partitioning_monthly>
+    <tablename_in_field>N</tablename_in_field>
+    <tablename_field/>
+    <tablename_in_table>Y</tablename_in_table>
+    <return_keys>N</return_keys>
+    <return_field/>
+    <fields><field><column_name>nm_dimensao</column_name><stream_name>nm_dimensao</stream_name></field><field><column_name>id_stage</column_name><stream_name>id_stage</stream_name></field><field><column_name>nm_original</column_name><stream_name>nm_original</stream_name></field><field><column_name>nk_dw</column_name><stream_name>nk_dw</stream_name></field></fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>440</xloc><yloc>240</yloc><draw>Y</draw></GUI>
+  </step>
+  <step_error_handling></step_error_handling>
+  <slave-step-copy-partition-distribution></slave-step-copy-partition-distribution>
+  <slave_transformation>N</slave_transformation>
+</transformation>

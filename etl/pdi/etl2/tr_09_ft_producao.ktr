@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transformation>
+  <info>
+    <name>tr_09_ft_producao</name>
+    <description>Fato de produção (poço x campo x mês), recarga completa.</description>
+    <extended_description/>
+    <trans_version/>
+    <trans_type>Normal</trans_type>
+    <directory>/</directory>
+    <parameters></parameters>
+    <size_rowset>10000</size_rowset>
+    <sleep_time_empty>50</sleep_time_empty>
+    <sleep_time_full>50</sleep_time_full>
+    <unique_connections>N</unique_connections>
+    <feedback_shown>Y</feedback_shown>
+    <feedback_size>100000</feedback_size>
+    <using_thread_priorities>Y</using_thread_priorities>
+    <shared_objects_file/>
+    <capture_step_performance>N</capture_step_performance>
+    <step_performance_capturing_delay>1000</step_performance_capturing_delay>
+    <step_performance_capturing_size_limit>100</step_performance_capturing_size_limit>
+    <dependencies></dependencies>
+    <partitionschemas></partitionschemas>
+    <slaveservers></slaveservers>
+    <clusterschemas></clusterschemas>
+    <created_user>anp-oil-gas-dw</created_user>
+    <created_date>2026/11/14 12:00:00.000</created_date>
+    <modified_user>anp-oil-gas-dw</modified_user>
+    <modified_date>2026/11/14 12:00:00.000</modified_date>
+  </info>
+  <notepads>
+    <notepad>
+      <note>ft_producao (recarga completa): volume do mês = média diária x dias (T10); preço por contrato + campo + mês
+(T11, T18) e receita estimada; chaves substitutas das versões vigentes; 0 = dimensão não se aplica.</note>
+      <xloc>20</xloc><yloc>4</yloc><width>640</width><heigth>50</heigth>
+      <fontname>Segoe UI</fontname><fontsize>9</fontsize><fontbold>N</fontbold><fontitalic>N</fontitalic>
+      <fontcolorred>14</fontcolorred><fontcolorgreen>58</fontcolorgreen><fontcolorblue>105</fontcolorblue>
+      <backgroundcolorred>230</backgroundcolorred><backgroundcolorgreen>240</backgroundcolorgreen><backgroundcolorblue>250</backgroundcolorblue>
+      <bordercolorred>100</bordercolorred><bordercolorgreen>100</bordercolorgreen><bordercolorblue>100</bordercolorblue>
+      <drawshadow>N</drawshadow>
+    </notepad>
+  </notepads>
+  <connection>
+    <name>st_anp</name>
+    <server>localhost</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>st_anp</database>
+    <port>5432</port>
+    <username>postgres</username>
+    <password>${PG_SENHA}</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes><attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute><attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute><attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute><attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute><attribute><code>PRESERVE_RESERVED_WORD_CASE</code><attribute>Y</attribute></attribute><attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute><attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>Y</attribute></attribute><attribute><code>SUPPORTS_TIMESTAMP_DATA_TYPE</code><attribute>Y</attribute></attribute><attribute><code>USE_POOLING</code><attribute>N</attribute></attribute></attributes>
+  </connection>
+  <connection>
+    <name>dw_anp_pdi</name>
+    <server>localhost</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>dw_anp_pdi</database>
+    <port>5432</port>
+    <username>postgres</username>
+    <password>${PG_SENHA}</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes><attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute><attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute><attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute><attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute><attribute><code>PRESERVE_RESERVED_WORD_CASE</code><attribute>Y</attribute></attribute><attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute><attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>Y</attribute></attribute><attribute><code>SUPPORTS_TIMESTAMP_DATA_TYPE</code><attribute>Y</attribute></attribute><attribute><code>USE_POOLING</code><attribute>N</attribute></attribute></attributes>
+  </connection>
+  <order>
+    <hop><from>Produção com chaves e preço</from><to>ft_producao</to><enabled>Y</enabled></hop>
+  </order>
+  <step>
+    <name>Produção com chaves e preço</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <connection>dw_anp_pdi</connection>
+    <sql>-- Grão poço x campo x mês (trab.cons). T10 volume do mês = média diária x dias do mês;
+-- T11/T18 preço do petróleo por contrato + campo + mês (média dos preços publicados) ou, se um só
+-- contrato publica para o campo no mês, pelo campo; receita = petróleo (m3) x preço.
+-- Chaves substitutas: versão vigente de cada dimensão, pela chave natural do etl_depara; 0 = não se aplica.
+WITH preco AS (SELECT coalesce(trab.chave_contrato(numero), '-') AS kc, coalesce(trab.chave(campo_nome), '-') AS kf, periodo, valor_rs_m3
+               FROM trab.preco),
+     preco_contrato AS (SELECT kc, kf, periodo, avg(valor_rs_m3) AS preco FROM preco GROUP BY 1, 2, 3),
+     preco_campo AS (SELECT kf, periodo, avg(valor_rs_m3) AS preco FROM preco GROUP BY 1, 2 HAVING count(DISTINCT kc) = 1),
+     campo AS (SELECT c.id_campo, coalesce(trab.chave(c.nome), '-') AS kf, d.sk_campo
+               FROM trab.campo c
+               JOIN etl_depara m ON m.nm_dimensao = 'dim_campo' AND m.id_stage = c.id_campo
+               JOIN dim_campo d ON d.nk_campo = m.nk_dw AND d.sk_campo &lt;&gt; 0 AND d.etl_dt_fim &gt;= '2199-12-31'),
+     contrato AS (SELECT c.id_contrato, coalesce(trab.chave_contrato(c.numero), '-') AS kc, coalesce(d.sk_contrato, 0) AS sk_contrato
+                  FROM trab.contrato c
+                  LEFT JOIN etl_depara m ON m.nm_dimensao = 'dim_contrato' AND m.id_stage = c.id_contrato
+                  LEFT JOIN dim_contrato d ON d.nk_contrato = m.nk_dw AND d.sk_contrato &lt;&gt; 0 AND d.etl_dt_fim &gt;= '2199-12-31'),
+     poco AS (SELECT m.id_stage AS id_poco, d.sk_poco FROM etl_depara m
+              JOIN dim_poco d ON d.nk_poco = m.nk_dw AND d.sk_poco &lt;&gt; 0 AND d.etl_dt_fim &gt;= '2199-12-31'
+              WHERE m.nm_dimensao = 'dim_poco'),
+     empresa AS (SELECT m.id_stage AS id_empresa, d.sk_empresa FROM etl_depara m
+                 JOIN dim_empresa d ON d.nk_empresa = m.nk_dw AND d.sk_empresa &lt;&gt; 0 AND d.etl_dt_fim &gt;= '2199-12-31'
+                 WHERE m.nm_dimensao = 'dim_empresa'),
+     instalacao AS (SELECT m.id_stage AS id_instalacao, d.sk_instalacao FROM etl_depara m
+                    JOIN dim_instalacao d ON d.nk_instalacao = m.nk_dw AND d.sk_instalacao &lt;&gt; 0 AND d.etl_dt_fim &gt;= '2199-12-31'
+                    WHERE m.nm_dimensao = 'dim_instalacao'),
+     corrente AS (SELECT c.id_caracterizacao, d.sk_corrente FROM trab.caracterizacao c
+                  JOIN dim_corrente d ON d.sk_corrente &lt;&gt; 0 AND d.nk_corrente = trab.chave(c.corrente) AND d.dt_periodo_carga = c.periodo_carga)
+SELECT to_char(f.periodo, 'YYYYMM01')::int AS sk_data,
+       po.sk_poco, ca.sk_campo,
+       coalesce(em.sk_empresa, 0) AS sk_empresa, coalesce(ct.sk_contrato, 0) AS sk_contrato,
+       coalesce(it.sk_instalacao, 0) AS sk_instalacao, coalesce(cr.sk_corrente, 0) AS sk_corrente,
+       coalesce(f.oleo_bbl_dia, 0) * dias.n AS md_oleo_bbl,
+       coalesce(f.condensado_bbl_dia, 0) * dias.n AS md_condensado_bbl,
+       coalesce(f.petroleo_bbl_dia, 0) * dias.n AS md_petroleo_bbl,
+       coalesce(f.agua_bbl_dia, 0) * dias.n AS md_agua_bbl,
+       coalesce(f.gas_assoc_mm3_dia, 0) * dias.n AS md_gas_assoc_mil_m3,
+       coalesce(f.gas_nao_assoc_mm3_dia, 0) * dias.n AS md_gas_nao_assoc_mil_m3,
+       coalesce(f.gas_total_mm3_dia, 0) * dias.n AS md_gas_total_mil_m3,
+       f.horas_producao AS md_horas_producao,
+       coalesce(pc.preco, pf.preco) AS md_preco_rs_m3,
+       coalesce(f.petroleo_bbl_dia, 0) * dias.n * 0.158987294928 * coalesce(pc.preco, pf.preco) AS md_receita_estimada_rs
+FROM trab.cons f
+CROSS JOIN LATERAL (SELECT extract(day FROM date_trunc('month', f.periodo) + interval '1 month - 1 day')::int AS n) dias
+JOIN poco po USING (id_poco)
+JOIN campo ca USING (id_campo)
+JOIN contrato ct USING (id_contrato)
+LEFT JOIN empresa em USING (id_empresa)
+LEFT JOIN instalacao it USING (id_instalacao)
+LEFT JOIN corrente cr USING (id_caracterizacao)
+LEFT JOIN preco_contrato pc ON pc.kc = ct.kc AND pc.kf = ca.kf AND pc.periodo = f.periodo
+LEFT JOIN preco_campo pf ON pf.kf = ca.kf AND pf.periodo = f.periodo</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>140</xloc><yloc>120</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>ft_producao</name>
+    <type>TableOutput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <connection>dw_anp_pdi</connection>
+    <schema></schema>
+    <table>ft_producao</table>
+    <commit>10000</commit>
+    <truncate>Y</truncate>
+    <ignore_errors>N</ignore_errors>
+    <use_batch>Y</use_batch>
+    <specify_fields>Y</specify_fields>
+    <partitioning_enabled>N</partitioning_enabled>
+    <partitioning_field/>
+    <partitioning_daily>N</partitioning_daily>
+    <partitioning_monthly>Y</partitioning_monthly>
+    <tablename_in_field>N</tablename_in_field>
+    <tablename_field/>
+    <tablename_in_table>Y</tablename_in_table>
+    <return_keys>N</return_keys>
+    <return_field/>
+    <fields><field><column_name>sk_data</column_name><stream_name>sk_data</stream_name></field><field><column_name>sk_poco</column_name><stream_name>sk_poco</stream_name></field><field><column_name>sk_campo</column_name><stream_name>sk_campo</stream_name></field><field><column_name>sk_empresa</column_name><stream_name>sk_empresa</stream_name></field><field><column_name>sk_contrato</column_name><stream_name>sk_contrato</stream_name></field><field><column_name>sk_instalacao</column_name><stream_name>sk_instalacao</stream_name></field><field><column_name>sk_corrente</column_name><stream_name>sk_corrente</stream_name></field><field><column_name>md_oleo_bbl</column_name><stream_name>md_oleo_bbl</stream_name></field><field><column_name>md_condensado_bbl</column_name><stream_name>md_condensado_bbl</stream_name></field><field><column_name>md_petroleo_bbl</column_name><stream_name>md_petroleo_bbl</stream_name></field><field><column_name>md_agua_bbl</column_name><stream_name>md_agua_bbl</stream_name></field><field><column_name>md_gas_assoc_mil_m3</column_name><stream_name>md_gas_assoc_mil_m3</stream_name></field><field><column_name>md_gas_nao_assoc_mil_m3</column_name><stream_name>md_gas_nao_assoc_mil_m3</stream_name></field><field><column_name>md_gas_total_mil_m3</column_name><stream_name>md_gas_total_mil_m3</stream_name></field><field><column_name>md_horas_producao</column_name><stream_name>md_horas_producao</stream_name></field><field><column_name>md_preco_rs_m3</column_name><stream_name>md_preco_rs_m3</stream_name></field><field><column_name>md_receita_estimada_rs</column_name><stream_name>md_receita_estimada_rs</stream_name></field></fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>440</xloc><yloc>120</yloc><draw>Y</draw></GUI>
+  </step>
+  <step_error_handling></step_error_handling>
+  <slave-step-copy-partition-distribution></slave-step-copy-partition-distribution>
+  <slave_transformation>N</slave_transformation>
+</transformation>

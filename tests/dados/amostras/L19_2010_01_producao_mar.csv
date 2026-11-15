@@ -1,0 +1,11 @@
+﻿ANP - Agência Nacional do Petroleo, Gás Natural e Biocombustíveis;;;;Data: 29/03/2019;;;;;;;;;;;;;;
+SIGEP Produção - Versão 9.19, build 38 (Oracle 11g);;;;;;;;;;;;;;;;;;
+BMP - Produção de Petróleo, Gás Natural e Água (Poço) por Campo;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;
+Estado;Bacia;Nome Poço;;Campo;Operador;Número do Contrato;Período;Óleo (bbl/dia);Condensado (bbl/dia);Petróleo (bbl/dia);Gás Natural (Mm³/dia);;;Volume Gás Royalties (Mm³/dia);Água (bbl/dia);Instalação Destino;Tipo Instalação;Tempo de Produção (hs por mês)
+;;ANP;Operador;;;;;;;;Associado;Não Associado;Gás Total;;;;;
+Rio de Janeiro;Campos;7-BR-23HP-RJS;7BR23HPRJS          ;BARRACUDA;Petrobras;480000038979792;2010/01;5.270,6579;0,0000;5.270,6579;51,6873;0,0000;51,6873;1.600,09830;5.270,6072;PETROBRAS 43;UEP;0
+Rio de Janeiro;Campos;7-BR-25HP-RJS;7BR25HPRJS          ;BARRACUDA;Petrobras;480000038979792;2010/01;4.895,5681;0,0000;4.895,5681;40,9257;0,0000;40,9257;1.266,94605;3.263,6688;PETROBRAS 43;UEP;0
+Rio de Janeiro;Campos;7-BR-27HP-RJS;7BR27HPRJS          ;BARRACUDA;Petrobras;480000038979792;2010/01;3.263,5065;0,0000;3.263,5065;84,9942;0,0000;84,9942;2.631,18708;5.801,7552;PETROBRAS 43;UEP;0
+Rio de Janeiro;Campos;7-BR-29HP-RJS;7BR29HPRJS          ;BARRACUDA;Petrobras;480000038979792;2010/01;7.027,7488;0,0000;7.027,7488;70,0482;0,0000;70,0482;2.168,50123;780,8150;PETROBRAS 43;UEP;0
+Rio de Janeiro;Campos;7-BR-31HP-RJS;7BR31HPRJS          ;BARRACUDA;Petrobras;480000038979792;2010/01;5.176,8809;0,0000;5.176,8809;93,2129;0,0000;93,2129;2.885,61574;14.139,7993;PETROBRAS 43;UEP;0

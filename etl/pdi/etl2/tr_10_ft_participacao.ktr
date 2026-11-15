@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transformation>
+  <info>
+    <name>tr_10_ft_participacao</name>
+    <description>Fato de participação (empresa x contrato x foto da ANP), recarga completa.</description>
+    <extended_description/>
+    <trans_version/>
+    <trans_type>Normal</trans_type>
+    <directory>/</directory>
+    <parameters></parameters>
+    <size_rowset>10000</size_rowset>
+    <sleep_time_empty>50</sleep_time_empty>
+    <sleep_time_full>50</sleep_time_full>
+    <unique_connections>N</unique_connections>
+    <feedback_shown>Y</feedback_shown>
+    <feedback_size>100000</feedback_size>
+    <using_thread_priorities>Y</using_thread_priorities>
+    <shared_objects_file/>
+    <capture_step_performance>N</capture_step_performance>
+    <step_performance_capturing_delay>1000</step_performance_capturing_delay>
+    <step_performance_capturing_size_limit>100</step_performance_capturing_size_limit>
+    <dependencies></dependencies>
+    <partitionschemas></partitionschemas>
+    <slaveservers></slaveservers>
+    <clusterschemas></clusterschemas>
+    <created_user>anp-oil-gas-dw</created_user>
+    <created_date>2026/11/14 12:00:00.000</created_date>
+    <modified_user>anp-oil-gas-dw</modified_user>
+    <modified_date>2026/11/14 12:00:00.000</modified_date>
+  </info>
+  <notepads>
+    <notepad>
+      <note>ft_participacao (recarga completa): uma linha por sócia, contrato e foto da relação de concessionários;
+md_percentual é semiaditiva e dd_operador indica a operadora (S/N).</note>
+      <xloc>20</xloc><yloc>4</yloc><width>640</width><heigth>50</heigth>
+      <fontname>Segoe UI</fontname><fontsize>9</fontsize><fontbold>N</fontbold><fontitalic>N</fontitalic>
+      <fontcolorred>14</fontcolorred><fontcolorgreen>58</fontcolorgreen><fontcolorblue>105</fontcolorblue>
+      <backgroundcolorred>230</backgroundcolorred><backgroundcolorgreen>240</backgroundcolorgreen><backgroundcolorblue>250</backgroundcolorblue>
+      <bordercolorred>100</bordercolorred><bordercolorgreen>100</bordercolorgreen><bordercolorblue>100</bordercolorblue>
+      <drawshadow>N</drawshadow>
+    </notepad>
+  </notepads>
+  <connection>
+    <name>st_anp</name>
+    <server>localhost</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>st_anp</database>
+    <port>5432</port>
+    <username>postgres</username>
+    <password>${PG_SENHA}</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes><attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute><attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute><attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute><attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute><attribute><code>PRESERVE_RESERVED_WORD_CASE</code><attribute>Y</attribute></attribute><attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute><attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>Y</attribute></attribute><attribute><code>SUPPORTS_TIMESTAMP_DATA_TYPE</code><attribute>Y</attribute></attribute><attribute><code>USE_POOLING</code><attribute>N</attribute></attribute></attributes>
+  </connection>
+  <connection>
+    <name>dw_anp_pdi</name>
+    <server>localhost</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>dw_anp_pdi</database>
+    <port>5432</port>
+    <username>postgres</username>
+    <password>${PG_SENHA}</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes><attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute><attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute><attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute><attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute><attribute><code>PRESERVE_RESERVED_WORD_CASE</code><attribute>Y</attribute></attribute><attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute><attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>Y</attribute></attribute><attribute><code>SUPPORTS_TIMESTAMP_DATA_TYPE</code><attribute>Y</attribute></attribute><attribute><code>USE_POOLING</code><attribute>N</attribute></attribute></attributes>
+  </connection>
+  <order>
+    <hop><from>Participações por foto</from><to>ft_participacao</to><enabled>Y</enabled></hop>
+  </order>
+  <step>
+    <name>Participações por foto</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <connection>dw_anp_pdi</connection>
+    <sql>-- Uma linha por sócia, contrato e foto da relação de concessionários (a data do download é a data da foto);
+-- grafias unidas (T07) no mesmo contrato somam a participação
+WITH p AS (SELECT p.*, (regexp_match(p.nome_arquivo, '/([0-9]{4})-([0-9]{2})-([0-9]{2})/')) AS d FROM trab.participacao p)
+SELECT (p.d[1] || p.d[2] || p.d[3])::int AS sk_data,
+       coalesce(em.sk_empresa, 0) AS sk_empresa, coalesce(co.sk_contrato, 0) AS sk_contrato,
+       sum(p.percentual) AS md_percentual, CASE WHEN bool_or(p.operador) THEN 'S' ELSE 'N' END AS dd_operador
+FROM p
+LEFT JOIN etl_depara me ON me.nm_dimensao = 'dim_empresa' AND me.id_stage = p.id_empresa
+LEFT JOIN dim_empresa em ON em.sk_empresa &lt;&gt; 0 AND em.etl_dt_fim &gt;= '2199-12-31' AND em.nk_empresa = me.nk_dw
+LEFT JOIN etl_depara mt ON mt.nm_dimensao = 'dim_contrato' AND mt.id_stage = p.id_contrato
+LEFT JOIN dim_contrato co ON co.sk_contrato &lt;&gt; 0 AND co.etl_dt_fim &gt;= '2199-12-31' AND co.nk_contrato = mt.nk_dw
+GROUP BY 1, 2, 3</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>140</xloc><yloc>120</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>ft_participacao</name>
+    <type>TableOutput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <connection>dw_anp_pdi</connection>
+    <schema></schema>
+    <table>ft_participacao</table>
+    <commit>10000</commit>
+    <truncate>Y</truncate>
+    <ignore_errors>N</ignore_errors>
+    <use_batch>Y</use_batch>
+    <specify_fields>Y</specify_fields>
+    <partitioning_enabled>N</partitioning_enabled>
+    <partitioning_field/>
+    <partitioning_daily>N</partitioning_daily>
+    <partitioning_monthly>Y</partitioning_monthly>
+    <tablename_in_field>N</tablename_in_field>
+    <tablename_field/>
+    <tablename_in_table>Y</tablename_in_table>
+    <return_keys>N</return_keys>
+    <return_field/>
+    <fields><field><column_name>sk_data</column_name><stream_name>sk_data</stream_name></field><field><column_name>sk_empresa</column_name><stream_name>sk_empresa</stream_name></field><field><column_name>sk_contrato</column_name><stream_name>sk_contrato</stream_name></field><field><column_name>md_percentual</column_name><stream_name>md_percentual</stream_name></field><field><column_name>dd_operador</column_name><stream_name>dd_operador</stream_name></field></fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>440</xloc><yloc>120</yloc><draw>Y</draw></GUI>
+  </step>
+  <step_error_handling></step_error_handling>
+  <slave-step-copy-partition-distribution></slave-step-copy-partition-distribution>
+  <slave_transformation>N</slave_transformation>
+</transformation>

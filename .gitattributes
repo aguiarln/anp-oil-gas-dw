@@ -1,0 +1,2 @@
+# Amostras dos testes: trechos dos arquivos da ANP, mantidos byte a byte (sem conversão de fim de linha)
+tests/dados/amostras/** -text

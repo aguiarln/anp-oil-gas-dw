@@ -1,0 +1,65 @@
+campo_origem,bacia_origem,campo_destino,bacia_destino,mes,tipo,motivo
+LULA,Santos,TUPI,Santos,2020-07,renomeacao,campo renomeado
+SUL DE LULA,Santos,SUL DE TUPI,Santos,2020-07,renomeacao,campo renomeado
+AnC_LULA,Santos,AnC_TUPI,Santos,2020-07,renomeacao,área não contratada renomeada com o campo
+FAZENDA BELÉM,Potiguar,FAZENDA BELÉM CE,Potiguar,2022-11,renomeacao,nome desambiguado (dois campos com o mesmo nome)
+FAZENDA BELÉM,Recôncavo,FAZENDA BELÉM BA,Recôncavo,2022-11,renomeacao,nome desambiguado (dois campos com o mesmo nome)
+BREJINHO,Potiguar,BREJINHO RN,Potiguar,2022-11,renomeacao,nome desambiguado (dois campos com o mesmo nome)
+BREJINHO,Recôncavo,BREJINHO BA,Recôncavo,2022-11,renomeacao,nome desambiguado (dois campos com o mesmo nome)
+PA-1ALV8DBA_REC-T-182,Recôncavo,Mãe-da-lua,Recôncavo,2017-05,renomeacao,plano de avaliação declarado campo
+PA-1GALP42RN_POT-T-743,Potiguar,PERIQUITO NORTE,Potiguar,2017-12,renomeacao,plano de avaliação declarado campo
+PA-3BRSA956RN_3BRSA1074RN_POT-T-744,Potiguar,Periquito Nordeste,Potiguar,2018-09,renomeacao,plano de avaliação declarado campo
+PA-1BGM1ES_EST-T-476,Espírito Santo,SUINDARA,Espírito Santo,2020-12,renomeacao,plano de avaliação declarado campo
+PA-1GPK4DBA_REC-T-128,Recôncavo,TIRIBA,Recôncavo,2021-10,renomeacao,plano de avaliação declarado campo
+PA-1-BGM-4-ES_ES-T-496,Espírito Santo,IRARA,Espírito Santo,2022-06,renomeacao,plano de avaliação declarado campo
+PA-1POT1RN_POT-T-702,Potiguar,SABIÁ-LARANJEIRA,Potiguar,2023-10,renomeacao,plano de avaliação declarado campo
+PA-1BRSA258-BT-ES-12,Espírito Santo,INHAMBU,Espírito Santo,2005-12,unificacao,plano de avaliação incorporado a campo existente
+PA-1BRSA504DES-BT-ES-15,Espírito Santo,FAZENDA SÃO RAFAEL,Espírito Santo,2007-07,unificacao,plano de avaliação incorporado a campo existente
+PA-1BRSA568DBA-REC-T-265,Recôncavo,SOCORRO,Recôncavo,2008-07,unificacao,plano de avaliação incorporado a campo existente
+PA-1BRSA452-1BRSA453-POT-T-661,Potiguar,ESTREITO,Potiguar,2009-02,unificacao,plano de avaliação incorporado a campo existente
+SOCORRO EXTENSÃO NORTE,Recôncavo,SOCORRO EXTENSÃO,Recôncavo,2011-01,unificacao,campo incorporado
+RIO PRETO SUDESTE,Espírito Santo,RIO PRETO,Espírito Santo,2013-11,unificacao,campo incorporado
+CARMÓPOLIS NOROESTE,Sergipe,CARMÓPOLIS,Sergipe,2014-02,unificacao,campo incorporado
+MATO GROSSO NOROESTE,Sergipe,MATO GROSSO,Sergipe,2014-02,unificacao,campo incorporado
+MATO GROSSO NORTE,Sergipe,MATO GROSSO,Sergipe,2014-02,unificacao,campo incorporado
+MATO GROSSO SUDOESTE,Sergipe,MATO GROSSO,Sergipe,2014-02,unificacao,campo incorporado
+MATO GROSSO SUL,Sergipe,MATO GROSSO,Sergipe,2014-02,unificacao,campo incorporado
+SIRIRIZINHO SUL,Sergipe,SIRIRIZINHO,Sergipe,2014-02,unificacao,campo incorporado
+JACUTINGA NORTE,Espírito Santo,JACUTINGA,Espírito Santo,2014-04,unificacao,campo incorporado
+BADEJO,Campos,PAMPO,Campos,2016-06,unificacao,campo incorporado
+TRILHA,Campos,PAMPO,Campos,2016-06,unificacao,campo incorporado
+BALEIA AZUL,Campos,JUBARTE,Campos,2019-05,unificacao,campo incorporado
+BALEIA FRANCA,Campos,JUBARTE,Campos,2019-05,unificacao,campo incorporado
+CACHALOTE,Campos,JUBARTE,Campos,2019-05,unificacao,campo incorporado
+GAIVOTA,Espírito Santo,TUCANO,Espírito Santo,2020-03,unificacao,campo incorporado
+Jandaia Sul,Recôncavo,JANDAIA,Recôncavo,2020-03,unificacao,campo incorporado
+Cancã Leste,Espírito Santo,CANCÃ,Espírito Santo,2020-09,unificacao,campo incorporado
+BOA VISTA,Potiguar,BENFICA,Potiguar,2020-12,unificacao,campo incorporado
+MORRINHO,Potiguar,BENFICA,Potiguar,2020-12,unificacao,campo incorporado
+REDONDA PROFUNDO,Potiguar,BENFICA,Potiguar,2020-12,unificacao,campo incorporado
+GUAMARÉ SUDESTE,Potiguar,GUAMARÉ,Potiguar,2021-01,unificacao,campo incorporado
+ARATUM,Potiguar,MACAU,Potiguar,2021-05,unificacao,campo incorporado
+SERRA,Potiguar,MACAU,Potiguar,2021-05,unificacao,campo incorporado
+JANDAIA,Recôncavo,TANGARÁ,Recôncavo,2021-05,unificacao,campo incorporado
+RIO DA SERRA,Recôncavo,TANGARÁ,Recôncavo,2021-05,unificacao,campo incorporado
+RIACHO DA BARRA,Recôncavo,FAZENDA IMBÉ,Recôncavo,2021-10,unificacao,campo incorporado
+GURIATÃ,Recôncavo,FAZENDA IMBÉ,Recôncavo,2021-10,unificacao,campo incorporado
+Canário da Terra,Recôncavo,FAZENDA IMBÉ,Recôncavo,2021-10,unificacao,campo incorporado
+POJUCA,Recôncavo,TAPIRANGA NORTE,Recôncavo,2022-06,unificacao,campo incorporado
+RIO POJUCA,Recôncavo,TAPIRANGA NORTE,Recôncavo,2022-06,unificacao,campo incorporado
+SÃO MIGUEL DOS CAMPOS,Alagoas,FURADO,Alagoas,2022-07,unificacao,campo incorporado
+CIDADE DE SÃO MIGUEL DOS CAMPOS,Alagoas,FURADO,Alagoas,2022-07,unificacao,campo incorporado
+CÓRREGO CEDRO NORTE,Espírito Santo,JACUTINGA,Espírito Santo,2022-07,unificacao,campo incorporado
+CÓRREGO CEDRO NORTE SUL,Espírito Santo,JACUTINGA,Espírito Santo,2022-07,unificacao,campo incorporado
+CÓRREGO DAS PEDRAS,Espírito Santo,JACUTINGA,Espírito Santo,2022-07,unificacao,campo incorporado
+RIO PRETO OESTE,Espírito Santo,JACUTINGA,Espírito Santo,2022-07,unificacao,campo incorporado
+RIO PRETO SUL,Espírito Santo,JACUTINGA,Espírito Santo,2022-07,unificacao,campo incorporado
+SERIEMA,Espírito Santo,JACUTINGA,Espírito Santo,2022-07,unificacao,campo incorporado
+FAZENDA QUEIMADAS,Espírito Santo,FAZENDA CEDRO,Espírito Santo,2022-07,unificacao,campo incorporado
+DOM JOÃO MAR,Recôncavo,DOM JOÃO,Recôncavo,2023-04,unificacao,campo incorporado (antes jazida compartilhada)
+GURIRI,Espírito Santo,SÃO MATEUS LESTE,Espírito Santo,2023-05,unificacao,campo incorporado
+MARIRICU,Espírito Santo,SÃO MATEUS LESTE,Espírito Santo,2023-05,unificacao,campo incorporado
+MARIRICU NORTE,Espírito Santo,SÃO MATEUS LESTE,Espírito Santo,2023-05,unificacao,campo incorporado
+RIO PRETO,Espírito Santo,SÃO MATEUS LESTE,Espírito Santo,2023-05,unificacao,campo incorporado
+RIO SÃO MATEUS,Espírito Santo,SÃO MATEUS LESTE,Espírito Santo,2023-05,unificacao,campo incorporado
+SÃO MATEUS,Espírito Santo,SÃO MATEUS LESTE,Espírito Santo,2023-05,unificacao,campo incorporado

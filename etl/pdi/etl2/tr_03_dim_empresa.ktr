@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transformation>
+  <info>
+    <name>tr_03_dim_empresa</name>
+    <description>Empresa uniformizada (T07, T14) com grupo econômico e país (T23). SCD2: nome, razão social, grupo e país.</description>
+    <extended_description/>
+    <trans_version/>
+    <trans_type>Normal</trans_type>
+    <directory>/</directory>
+    <parameters></parameters>
+    <size_rowset>10000</size_rowset>
+    <sleep_time_empty>50</sleep_time_empty>
+    <sleep_time_full>50</sleep_time_full>
+    <unique_connections>N</unique_connections>
+    <feedback_shown>Y</feedback_shown>
+    <feedback_size>100000</feedback_size>
+    <using_thread_priorities>Y</using_thread_priorities>
+    <shared_objects_file/>
+    <capture_step_performance>N</capture_step_performance>
+    <step_performance_capturing_delay>1000</step_performance_capturing_delay>
+    <step_performance_capturing_size_limit>100</step_performance_capturing_size_limit>
+    <dependencies></dependencies>
+    <partitionschemas></partitionschemas>
+    <slaveservers></slaveservers>
+    <clusterschemas></clusterschemas>
+    <created_user>anp-oil-gas-dw</created_user>
+    <created_date>2026/11/14 12:00:00.000</created_date>
+    <modified_user>anp-oil-gas-dw</modified_user>
+    <modified_date>2026/11/14 12:00:00.000</modified_date>
+  </info>
+  <notepads>
+    <notepad>
+      <note>dim_empresa: Empresa uniformizada (T07, T14) com grupo econômico e país (T23). SCD2: nome, razão social, grupo e país.
+De-para (T22): de qual linha da stage veio cada chave natural.</note>
+      <xloc>20</xloc><yloc>4</yloc><width>640</width><heigth>60</heigth>
+      <fontname>Segoe UI</fontname><fontsize>9</fontsize><fontbold>N</fontbold><fontitalic>N</fontitalic>
+      <fontcolorred>14</fontcolorred><fontcolorgreen>58</fontcolorgreen><fontcolorblue>105</fontcolorblue>
+      <backgroundcolorred>230</backgroundcolorred><backgroundcolorgreen>240</backgroundcolorgreen><backgroundcolorblue>250</backgroundcolorblue>
+      <bordercolorred>100</bordercolorred><bordercolorgreen>100</bordercolorgreen><bordercolorblue>100</bordercolorblue>
+      <drawshadow>N</drawshadow>
+    </notepad>
+  </notepads>
+  <connection>
+    <name>st_anp</name>
+    <server>localhost</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>st_anp</database>
+    <port>5432</port>
+    <username>postgres</username>
+    <password>${PG_SENHA}</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes><attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute><attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute><attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute><attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute><attribute><code>PRESERVE_RESERVED_WORD_CASE</code><attribute>Y</attribute></attribute><attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute><attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>Y</attribute></attribute><attribute><code>SUPPORTS_TIMESTAMP_DATA_TYPE</code><attribute>Y</attribute></attribute><attribute><code>USE_POOLING</code><attribute>N</attribute></attribute></attributes>
+  </connection>
+  <connection>
+    <name>dw_anp_pdi</name>
+    <server>localhost</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>dw_anp_pdi</database>
+    <port>5432</port>
+    <username>postgres</username>
+    <password>${PG_SENHA}</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes><attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute><attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute><attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute><attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute><attribute><code>PRESERVE_RESERVED_WORD_CASE</code><attribute>Y</attribute></attribute><attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute><attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>Y</attribute></attribute><attribute><code>SUPPORTS_TIMESTAMP_DATA_TYPE</code><attribute>Y</attribute></attribute><attribute><code>USE_POOLING</code><attribute>N</attribute></attribute></attributes>
+  </connection>
+  <order>
+    <hop><from>Regras da dim_empresa</from><to>SCD2 dim_empresa</to><enabled>Y</enabled></hop>
+    <hop><from>De-para da dim_empresa</from><to>etl_depara</to><enabled>Y</enabled></hop>
+  </order>
+  <step>
+    <name>Regras da dim_empresa</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <connection>dw_anp_pdi</connection>
+    <sql>-- T07 lista de-para de empresas; T14 grafias; T23 grupo econômico que a ANP não publica
+WITH uso AS (SELECT id_empresa, count(*) AS n FROM trab.cons GROUP BY 1),
+     uso_part AS (SELECT id_empresa, count(*) AS n FROM trab.participacao GROUP BY 1),
+     lista AS (SELECT DISTINCT ON (trab.chave(empresa_origem)) trab.chave(empresa_origem) AS origem, trab.chave(empresa_destino) AS destino
+               FROM trab.dp_empresas),
+     grupos AS (SELECT DISTINCT ON (trab.chave(empresa)) trab.chave(empresa) AS nk, grupo_economico, pais FROM trab.dp_grupos),
+     m AS (SELECT e.*, coalesce(l.destino, trab.chave(e.nome_fantasia)) AS nk,
+                  coalesce(u.n, 0) AS n_uso, coalesce(p.n, 0) AS n_part
+           FROM trab.empresa e
+           LEFT JOIN lista l ON l.origem = trab.chave(e.nome_fantasia)
+           LEFT JOIN uso u USING (id_empresa) LEFT JOIN uso_part p USING (id_empresa)
+           WHERE trab.chave(e.nome_fantasia) IS NOT NULL),
+     d AS (SELECT nk,
+                  (array_agg(nome_fantasia ORDER BY n_uso + n_part DESC, nome_fantasia COLLATE "C"))[1] AS nm_empresa,
+                  (array_agg(razao_social ORDER BY n_uso DESC, n_part DESC, nome_fantasia COLLATE "C") FILTER (WHERE razao_social &lt;&gt; ''))[1] AS razao,
+                  (array_agg(grupo ORDER BY n_uso DESC, n_part DESC, nome_fantasia COLLATE "C") FILTER (WHERE grupo &lt;&gt; ''))[1] AS grupo,
+                  (array_agg(pais ORDER BY n_uso DESC, n_part DESC, nome_fantasia COLLATE "C") FILTER (WHERE pais &lt;&gt; ''))[1] AS pais
+           FROM m GROUP BY nk)
+SELECT d.nk AS nk_empresa, d.nm_empresa, coalesce(d.razao, 'N/A') AS nm_razao_social,
+       CASE WHEN d.grupo IS NULL AND g.nk IS NOT NULL THEN g.grupo_economico ELSE coalesce(d.grupo, 'N/A') END AS nm_grupo_economico,
+       CASE WHEN d.grupo IS NULL AND g.nk IS NOT NULL THEN g.pais ELSE coalesce(d.pais, 'N/A') END AS nm_pais
+FROM d LEFT JOIN grupos g ON g.nk = d.nk
+ORDER BY d.nk</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>140</xloc><yloc>120</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>SCD2 dim_empresa</name>
+    <type>DimensionLookup</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <schema/>
+    <table>dim_empresa</table>
+    <connection>dw_anp_pdi</connection>
+    <commit>1000</commit>
+    <update>Y</update>
+    <fields>
+      <key><name>nk_empresa</name><lookup>nk_empresa</lookup></key>
+      <date><name/><from>etl_dt_inicio</from><to>etl_dt_fim</to></date>
+      <field><name>nm_empresa</name><lookup>nm_empresa</lookup><update>Insert</update></field><field><name>nm_razao_social</name><lookup>nm_razao_social</lookup><update>Insert</update></field><field><name>nm_grupo_economico</name><lookup>nm_grupo_economico</lookup><update>Insert</update></field><field><name>nm_pais</name><lookup>nm_pais</lookup><update>Insert</update></field>
+      <return><name>sk_empresa</name><rename/><creation_method>autoinc</creation_method><use_autoinc>Y</use_autoinc><version>etl_versao</version></return>
+    </fields>
+    <sequence/>
+    <min_year>1900</min_year>
+    <max_year>2199</max_year>
+    <cache_size>5000</cache_size>
+    <preload_cache>N</preload_cache>
+    <use_start_date_alternative>N</use_start_date_alternative>
+    <start_date_alternative>none</start_date_alternative>
+    <start_date_field_name/>
+    <useBatch>N</useBatch>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>440</xloc><yloc>120</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>De-para da dim_empresa</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <connection>dw_anp_pdi</connection>
+    <sql>SELECT 'dim_empresa' AS nm_dimensao, e.id_empresa AS id_stage, e.nome_fantasia AS nm_original,
+       coalesce(l.destino, trab.chave(e.nome_fantasia)) AS nk_dw
+FROM trab.empresa e
+LEFT JOIN (SELECT DISTINCT ON (trab.chave(empresa_origem)) trab.chave(empresa_origem) AS origem, trab.chave(empresa_destino) AS destino
+           FROM trab.dp_empresas) l ON l.origem = trab.chave(e.nome_fantasia)
+WHERE trab.chave(e.nome_fantasia) IS NOT NULL</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>140</xloc><yloc>240</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>etl_depara</name>
+    <type>TableOutput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <connection>dw_anp_pdi</connection>
+    <schema></schema>
+    <table>etl_depara</table>
+    <commit>10000</commit>
+    <truncate>N</truncate>
+    <ignore_errors>N</ignore_errors>
+    <use_batch>Y</use_batch>
+    <specify_fields>Y</specify_fields>
+    <partitioning_enabled>N</partitioning_enabled>
+    <partitioning_field/>
+    <partitioning_daily>N</partitioning_daily>
+    <partitioning_monthly>Y</partitioning_monthly>
+    <tablename_in_field>N</tablename_in_field>
+    <tablename_field/>
+    <tablename_in_table>Y</tablename_in_table>
+    <return_keys>N</return_keys>
+    <return_field/>
+    <fields><field><column_name>nm_dimensao</column_name><stream_name>nm_dimensao</stream_name></field><field><column_name>id_stage</column_name><stream_name>id_stage</stream_name></field><field><column_name>nm_original</column_name><stream_name>nm_original</stream_name></field><field><column_name>nk_dw</column_name><stream_name>nk_dw</stream_name></field></fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>440</xloc><yloc>240</yloc><draw>Y</draw></GUI>
+  </step>
+  <step_error_handling></step_error_handling>
+  <slave-step-copy-partition-distribution></slave-step-copy-partition-distribution>
+  <slave_transformation>N</slave_transformation>
+</transformation>

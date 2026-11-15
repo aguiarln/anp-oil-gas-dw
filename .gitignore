@@ -1,0 +1,67 @@
+# =============================================================================
+# Arquivos locais (nunca vão para o GitHub)
+# Atenção: no .gitignore use sempre "/" (barra normal), nunca "\".
+# =============================================================================
+
+# Dados brutos (data/raw/) e derivados (data/interim/). Links e método no README.md
+data/
+
+# Arquivos gerados: base origem em CSV (publicada como anexo da Release) e logs do pipeline
+dist/
+logs/
+
+# Variáveis de ambiente e credenciais (ex.: senha do PostgreSQL)
+.env
+.env.*
+# ...exceto o modelo, que é versionado e não contém senha
+!.env.exemplo
+
+# Anotações pessoais e configurações locais do Claude Code
+JOURNAL.md
+CLAUDE.md
+.claude/
+
+# =============================================================================
+# Python
+# =============================================================================
+
+# Ambiente virtual
+.venv/
+venv/
+
+# Cache e compilados
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# =============================================================================
+# Pentaho PDI
+# =============================================================================
+
+# Logs de execução (os backups .bak do Spoon estão na seção de temporários)
+*.log
+
+# =============================================================================
+# Temporários genéricos, sistema operacional e editor
+# =============================================================================
+
+~$*
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Windows
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+
+# Configurações pessoais do VS Code
+.vscode/

@@ -1,0 +1,14 @@
+# Configuração do projeto. As dependências ficam em requirements.txt (instalação com pip -r).
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]  # para importar etl.python.etl1 a partir da raiz do projeto
+# A auditoria completa (grupo "lento", ~10 min) só roda quando pedida: pytest -m lento
+addopts = "-m 'not lento' -ra"
+markers = [
+    "unidade: funções isoladas, com as amostras de tests/dados (segundos, sem banco)",
+    "integracao: PostgreSQL, num banco temporário criado e apagado pelos testes",
+    "dados: stage oficial (st_anp) já carregada; pulado se ela não existir",
+    "lento: auditoria completa com todos os brutos da ANP (~10 min); rode com: pytest -m lento",
+    "regras: premissas do projeto (git, senhas, documentação, README bilíngue)",
+]

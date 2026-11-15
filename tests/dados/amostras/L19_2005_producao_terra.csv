@@ -1,0 +1,12 @@
+﻿ANP - Agência Nacional do Petroleo, Gás Natural e Biocombustíveis;;;;;;;;;;;;;;;;;;
+SIGEP Produção - Versão 9.19, build 37 (Oracle 11g);;;;;;;;;;;;;;;;;;
+BMP - Produção de Petróleo, Gás Natural e Água (Poço) por Campo;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;
+Estado;Bacia;Nome Poço;;Campo;Operador;Número do Contrato;Período;Óleo (bbl/dia);Condensado (bbl/dia);Petróleo (bbl/dia);Gás Natural (Mm³/dia);;;Volume Gás Royalties (Mm³/dia);Água (bbl/dia);Instalação Destino;Tipo Instalação;Tempo de Produção (hs por mês)
+;;ANP;Operador;;;;;;;;Associado;Não Associado;Gás Total;;;;;
+Bahia;Recôncavo;7-C-10-BA;7C   0010  BA       ;CANDEIAS;Petrobras;480000036389734;2005/01;9,4367;0,0000;9,4367;0,0000;0,0000;0,0000;0,00000;0,0000;;;31
+Bahia;Recôncavo;7-C-13-BA;7C   0013  BA       ;CANDEIAS;Petrobras;480000036389734;2005/01;0,0000;0,0000;0,0000;0,0000;0,0000;0,0000;0,00000;0,0000;;;31
+Bahia;Recôncavo;7-A-6-BA;7A   0006  BA       ;ARATU;Petrobras;480000036329758;2005/01;0,0000;0,0000;0,0000;0,0000;0,0000;0,0000;0,00000;0,0000;;;31
+Bahia;Recôncavo;3-A-9-BA;3A   0009  BA       ;ARATU;Petrobras;480000036329758;2005/01;0,0000;0,0000;0,0000;0,0000;0,0000;0,0000;0,00000;0,0000;;;31
+Bahia;Recôncavo;7-C-25-BA;7C   0025  BA       ;CANDEIAS;Petrobras;480000036389734;2005/01;3,7779;0,0000;3,7779;0,0000;0,0000;0,0000;0,00000;0,0000;;;31
+Bahia;Recôncavo;7-C-39-BA;7C   0039  BA       ;CANDEIAS;Petrobras;480000036389734;2005/01;1,1342;0,0000;1,1342;0,0000;0,0000;0,0000;0,00000;0,0000;;;31
