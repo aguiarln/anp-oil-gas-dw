@@ -20,6 +20,11 @@ new files from the ANP website, save them under `data/raw/anp/`, run the
 pipeline and see the new data in the dashboard. The step-by-step guide is in
 [How to update the data](#how-to-update-the-data-manual-extraction).
 
+![Web dashboard: the Campos candidatos (candidate fields) screen, with Brazil's fields in 2023 side by side, region, state and year filters, and the outline map](docs/imagens/painel-campos-candidatos.png)
+
+*The web dashboard, on the **Campos candidatos** (candidate fields) screen: the 253 fields that produced in 2023,
+with production, decline, revenue and the field outlines published by ANP. The **🌐 PT | EN** button switches it to English.*
+
 ## Quick start
 
 To reproduce everything from the data published by ANP (Windows commands; on

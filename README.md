@@ -15,6 +15,11 @@ baixar arquivos novos no site da ANP, salvá-los em `data/raw/anp/`, rodar o
 pipeline e ver os dados novos no dashboard. O passo a passo está em
 [Como atualizar os dados](#como-atualizar-os-dados-extração-manual).
 
+![Painel web: a tela Campos candidatos, com os campos do Brasil em 2023 lado a lado, filtros por região, estado e ano, e o mapa dos contornos](docs/imagens/painel-campos-candidatos.png)
+
+*O painel web, na tela **Campos candidatos**: os 253 campos que produziram em 2023, com produção, declínio,
+receita e o mapa dos contornos publicados pela ANP.*
+
 ## Começo rápido
 
 Para reproduzir tudo a partir dos dados publicados pela ANP (comandos do Windows; em
