@@ -503,7 +503,19 @@ Columns, separated by `;` and in UTF-8:
 5. **101 rows have no stream.** The column is already empty in the PDF (e.g.
    "BT-REC-10 LAGOA DO PAULO").
 
-## License
+## Citation and license
+
+If you use this code, or the data processed by it, please cite the repository:
+
+```bibtex
+@software{AguiarNeto2026,
+  author  = {de Aguiar Neto, Luiz Pereira},
+  title   = {anp-oil-gas-dw: Reproducible BI pipeline on Brazil's ANP public oil and gas data},
+  year    = {2026},
+  version = {1.0.0},
+  url     = {https://github.com/aguiarln/anp-oil-gas-dw}
+}
+```
 
 The code and the documentation are under the [MIT license](LICENSE). Two exceptions:
 

@@ -498,7 +498,19 @@ Colunas, separadas por `;` e em UTF-8:
 5. **101 linhas não têm corrente.** A coluna já vem vazia no PDF (ex.:
    "BT-REC-10 LAGOA DO PAULO").
 
-## Licença
+## Citação e licença
+
+Se você usar este código, ou os dados tratados por ele, cite o repositório:
+
+```bibtex
+@software{AguiarNeto2026,
+  author  = {de Aguiar Neto, Luiz Pereira},
+  title   = {anp-oil-gas-dw: Reproducible BI pipeline on Brazil's ANP public oil and gas data},
+  year    = {2026},
+  version = {1.0.0},
+  url     = {https://github.com/aguiarln/anp-oil-gas-dw}
+}
+```
 
 O código e a documentação estão sob a [licença MIT](LICENSE). Duas exceções:
 
